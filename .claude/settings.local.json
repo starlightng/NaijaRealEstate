@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec naija_backend *)",
+      "Bash(npm run *)",
+      "Bash(Select-String -Pattern \"</div\")"
+    ]
+  }
+}
