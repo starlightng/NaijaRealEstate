@@ -54,16 +54,16 @@ async def get_current_user(
         raise AppError.ACCOUNT_INACTIVE
 
     return user
-60: 
-61: async def get_optional_user(
-62:     request: Request,
-63:     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-64:     db: AsyncSession = Depends(get_db),
-65: ) -> User | None:
-66:     try:
-67:         return await get_current_user(request, credentials, db)
-68:     except Exception:
-69:         return None
+
+async def get_optional_user(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    try:
+        return await get_current_user(request, credentials, db)
+    except Exception:
+        return None
 
 
 # ── Role Guards ───────────────────────────────────────────────────────────────

@@ -22,7 +22,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # ── Analytics ─────────────────────────────────────────────────────────────────
 
-@router.get("/analytics")
+@router.get("/analytics", response_model=APIResponse[dict])
 async def analytics(admin: AdminUser, db: DB):
     """Advanced analytics for administrators."""
     from app.models.user import User
@@ -63,7 +63,7 @@ async def analytics(admin: AdminUser, db: DB):
 
     avg_price = await db.scalar(select(func.avg(Property.price)).where(Property.status == "approved")) or 0
 
-    return {
+    return APIResponse(data={
         "properties": {
             "total": total_props,
             "pending_review": pending_review,
@@ -91,7 +91,7 @@ async def analytics(admin: AdminUser, db: DB):
             "grm_avg": "10.5x",
             "note": "Financial metrics are currently based on industry benchmarks for Nigeria."
         }
-    }
+    })
 
 
 # ── Moderation Queue ──────────────────────────────────────────────────────────
