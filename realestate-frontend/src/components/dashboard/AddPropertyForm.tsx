@@ -74,12 +74,20 @@ export default function AddPropertyForm({ onSuccess, initialData, propertyId }: 
 
   useEffect(() => {
     api.get("/properties/meta/context").then(res => {
-      const data = res.data?.data || res.data;
-      setMeta({
-        states: data.states || [],
-        popular_cities: data.popular_cities || {},
-      });
-    }).catch(err => console.error("Failed to fetch meta context", err));
+      // Axios res.data is the body. Body should be {status: "success", data: {...}}
+      // but we handle cases where it might be raw data too.
+      const responseBody = res.data;
+      const contextData = responseBody?.data || responseBody;
+      
+      if (contextData && typeof contextData === 'object') {
+        setMeta({
+          states: contextData.states || [],
+          popular_cities: contextData.popular_cities || {},
+        });
+      }
+    }).catch(err => {
+      console.error("Failed to fetch meta context", err);
+    });
   }, []);
 
   const amenityOptions = useMemo(() => AMENITIES_BY_TYPE[formData.property_type] || [], [formData.property_type]);

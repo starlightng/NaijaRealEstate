@@ -213,52 +213,52 @@ async def create_user(body: RegisterRequest, admin: AdminUser, db: DB):
     await db.flush()
     await db.refresh(user)
     return user
-217: 
-218: @router.get("/users", response_model=APIResponse[list[UserMe]])
-219: async def list_users(
-220:     admin: AdminUser, db: DB,
-221:     role: str | None = None,
-222:     skip: int = 0, limit: int = 100
-223: ):
-224:     query = select(User).where(User.deleted_at.is_(None))
-225:     if role:
-226:         query = query.where(User.role == role)
-227:     
-228:     result = await db.execute(query.order_by(User.full_name.asc()).offset(skip).limit(limit))
-229:     return APIResponse(data=result.scalars().all())
-230: 
-231: @router.patch("/properties/{property_id}/reassign", response_model=PropertyAdminOut)
-232: async def reassign_property(
-233:     property_id: UUID,
-234:     owner_id: UUID,
-235:     admin: AdminUser,
-236:     db: DB,
-237:     agent_id: UUID | None = None,
-238: ):
-239:     prop = await db.scalar(
-240:         select(Property).where(Property.id == property_id, Property.deleted_at.is_(None))
-241:     )
-242:     if not prop:
-243:         raise AppError.PROPERTY_NOT_FOUND
-244:     
-245:     # Verify new owner exists
-246:     new_owner = await db.get(User, owner_id)
-247:     if not new_owner:
-248:         raise AppError.USER_NOT_FOUND
-249:     
-250:     old_owner_id = prop.owner_id
-251:     prop.owner_id = owner_id
-252:     if agent_id:
-253:         prop.agent_id = agent_id
-254:     
-255:     db.add(AuditLog(
-256:         actor_id=admin.id, action="reassign_property",
-257:         target_type="property", target_id=property_id,
-258:         details={"old_owner": str(old_owner_id), "new_owner": str(owner_id)}
-259:     ))
-260:     
-261:     await db.flush()
-262:     return prop
+
+@router.get("/users", response_model=APIResponse[list[UserMe]])
+async def list_users(
+    admin: AdminUser, db: DB,
+    role: str | None = None,
+    skip: int = 0, limit: int = 100
+):
+    query = select(User).where(User.deleted_at.is_(None))
+    if role:
+        query = query.where(User.role == role)
+    
+    result = await db.execute(query.order_by(User.full_name.asc()).offset(skip).limit(limit))
+    return APIResponse(data=result.scalars().all())
+
+@router.patch("/properties/{property_id}/reassign", response_model=PropertyAdminOut)
+async def reassign_property(
+    property_id: UUID,
+    owner_id: UUID,
+    admin: AdminUser,
+    db: DB,
+    agent_id: UUID | None = None,
+):
+    prop = await db.scalar(
+        select(Property).where(Property.id == property_id, Property.deleted_at.is_(None))
+    )
+    if not prop:
+        raise AppError.PROPERTY_NOT_FOUND
+    
+    # Verify new owner exists
+    new_owner = await db.get(User, owner_id)
+    if not new_owner:
+        raise AppError.USER_NOT_FOUND
+    
+    old_owner_id = prop.owner_id
+    prop.owner_id = owner_id
+    if agent_id:
+        prop.agent_id = agent_id
+    
+    db.add(AuditLog(
+        actor_id=admin.id, action="reassign_property",
+        target_type="property", target_id=property_id,
+        details={"old_owner": str(old_owner_id), "new_owner": str(owner_id)}
+    ))
+    
+    await db.flush()
+    return prop
 
 @router.get("/audit-logs", response_model=list[AuditLogOut])
 async def list_audit_logs(

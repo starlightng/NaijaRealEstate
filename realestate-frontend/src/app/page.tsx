@@ -111,8 +111,14 @@ export default function Home() {
   };
 
   useEffect(() => {
-    api.get("/properties/meta/context").then(res => setMetadata(res.data?.data || res.data)).catch(() => {});
-    api.get("/properties/stats").then(res => setStats(res.data?.data || res.data)).catch(() => {});
+    api.get("/properties/meta/context").then(res => {
+      const d = res.data?.data || res.data;
+      if (d && typeof d === 'object') setMetadata(d);
+    }).catch(() => {});
+    api.get("/properties/stats").then(res => {
+      const d = res.data?.data || res.data;
+      if (d && typeof d === 'object') setStats(d);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
