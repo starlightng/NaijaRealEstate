@@ -31,8 +31,12 @@ export default function LandlordDashboard() {
         api.get("/properties/me/listings"),
         api.get("/inquiries/"),
       ]);
-      setListings(Array.isArray(listingRes.data) ? listingRes.data : listingRes.data.items ?? []);
-      setLeads(Array.isArray(leadRes.data) ? leadRes.data : []);
+      setListings(
+        Array.isArray(listingRes.data) 
+          ? listingRes.data 
+          : (listingRes.data.data || listingRes.data.items || [])
+      );
+      setLeads(Array.isArray(leadRes.data) ? leadRes.data : (leadRes.data.data || []));
     } catch (e) {
       console.error("Error fetching dashboard data", e);
     } finally {

@@ -42,6 +42,8 @@ class PropertyCreate(BaseModel):
     longitude: float | None = None
     amenities: list[str] = []
     video_url: str | None = None
+    owner_id: UUID | None = None
+    agent_id: UUID | None = None
 
     @field_validator("property_type")
     @classmethod

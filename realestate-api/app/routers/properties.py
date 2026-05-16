@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query, Response
 from sqlalchemy import select, func, or_, literal_column
 from sqlalchemy.orm import selectinload
 
-from app.core.dependencies import CurrentUser, LandlordOrAgentUser, DB
+from app.core.dependencies import CurrentUser, LandlordOrAgentUser, DB, OptionalCurrentUser
 from app.core.exceptions import AppError
 from app.models.property import Property
 from app.schemas.property import (
@@ -162,7 +162,7 @@ async def get_public_stats(db: DB):
     }
 
 
-@router.get("/me/listings", response_model=list[PropertyOut])
+@router.get("/me/listings", response_model=APIResponse[list[PropertyOut]])
 async def my_listings(
     current_user: LandlordOrAgentUser,
     db: DB,
@@ -181,20 +181,30 @@ async def my_listings(
         query = query.where(Property.status == status)
     query = query.order_by(Property.created_at.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
-    return result.scalars().all()
+    items = result.scalars().all()
+    return APIResponse(data=items)
 
 
 @router.get("/{property_id}", response_model=PropertyOut)
-async def get_property(property_id: UUID, db: DB):
+async def get_property(property_id: UUID, db: DB, current_user: OptionalCurrentUser = None):
     prop = await db.scalar(
         select(Property)
         .options(selectinload(Property.images))
         .where(Property.id == property_id, Property.deleted_at.is_(None))
     )
-    if not prop or prop.status != "approved":
+    if not prop:
+        raise AppError.PROPERTY_NOT_FOUND
+    
+    # Allow viewing if approved OR if current user is owner/agent/admin
+    can_view = prop.status == "approved"
+    if not can_view and current_user:
+        can_view = _owns_or_manages(prop, current_user)
+    
+    if not can_view:
         raise AppError.PROPERTY_NOT_FOUND
 
     prop.view_count += 1
+    await db.flush()
     return prop
 
 
@@ -224,9 +234,9 @@ async def create_property(
             pass
 
     prop = Property(
-        owner_id=owner_id or current_user.id, # Fallback to current_user if not specified
-        agent_id=agent_id,
-        **body.model_dump(),
+        owner_id=body.owner_id or owner_id or current_user.id,
+        agent_id=body.agent_id or agent_id,
+        **body.model_dump(exclude={"owner_id", "agent_id"}),
     )
     db.add(prop)
     await db.flush()
