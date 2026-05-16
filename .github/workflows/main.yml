@@ -43,4 +43,4 @@ jobs:
           push: true
           tags: ${{ env.FRONTEND_IMAGE }}:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=http://localhost:8000
+            NEXT_PUBLIC_API_URL=http://34.75.65.175:8000
