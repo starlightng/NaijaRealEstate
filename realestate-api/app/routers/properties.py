@@ -322,7 +322,9 @@ async def archive_property(
     db: DB,
 ):
     prop = await db.scalar(
-        select(Property).where(Property.id == property_id, Property.deleted_at.is_(None))
+        select(Property)
+        .options(selectinload(Property.images))
+        .where(Property.id == property_id, Property.deleted_at.is_(None))
     )
     if not prop:
         raise AppError.PROPERTY_NOT_FOUND
@@ -341,7 +343,9 @@ async def unarchive_property(
     db: DB,
 ):
     prop = await db.scalar(
-        select(Property).where(Property.id == property_id, Property.deleted_at.is_(None))
+        select(Property)
+        .options(selectinload(Property.images))
+        .where(Property.id == property_id, Property.deleted_at.is_(None))
     )
     if not prop:
         raise AppError.PROPERTY_NOT_FOUND

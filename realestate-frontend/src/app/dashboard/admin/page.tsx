@@ -74,9 +74,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleReassign = async (propertyId: string, ownerId: string) => {
+  const handleReassign = async (property_id: string, owner_id: string) => {
     try {
-      await api.patch(`/admin/properties/${propertyId}/reassign`, null, { params: { owner_id: ownerId } });
+      await api.patch(`/admin/properties/${property_id}/reassign`, { owner_id });
       setReassigningProperty(null);
       fetchData();
       alert("Property reassigned successfully!");

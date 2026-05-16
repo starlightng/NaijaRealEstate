@@ -21,6 +21,11 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
 # ── Analytics ─────────────────────────────────────────────────────────────────
+24: 
+25: class ReassignRequest(BaseModel):
+26:     owner_id: UUID
+27:     agent_id: UUID | None = None
+28: 
 
 @router.get("/analytics", response_model=APIResponse[dict])
 async def analytics(admin: AdminUser, db: DB):
@@ -230,13 +235,14 @@ async def list_users(
 @router.patch("/properties/{property_id}/reassign", response_model=PropertyAdminOut)
 async def reassign_property(
     property_id: UUID,
-    owner_id: UUID,
+    body: ReassignRequest,
     admin: AdminUser,
     db: DB,
-    agent_id: UUID | None = None,
 ):
     prop = await db.scalar(
-        select(Property).where(Property.id == property_id, Property.deleted_at.is_(None))
+        select(Property)
+        .options(selectinload(Property.images))
+        .where(Property.id == property_id, Property.deleted_at.is_(None))
     )
     if not prop:
         raise AppError.PROPERTY_NOT_FOUND
@@ -247,14 +253,14 @@ async def reassign_property(
         raise AppError.USER_NOT_FOUND
     
     old_owner_id = prop.owner_id
-    prop.owner_id = owner_id
-    if agent_id:
-        prop.agent_id = agent_id
+    prop.owner_id = body.owner_id
+    if body.agent_id:
+        prop.agent_id = body.agent_id
     
     db.add(AuditLog(
         actor_id=admin.id, action="reassign_property",
         target_type="property", target_id=property_id,
-        after_data={"old_owner": str(old_owner_id), "new_owner": str(owner_id)}
+        after_data={"old_owner": str(old_owner_id), "new_owner": str(body.owner_id)}
     ))
     
     await db.flush()

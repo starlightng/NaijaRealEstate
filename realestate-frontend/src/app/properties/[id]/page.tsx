@@ -27,11 +27,12 @@ export default function PropertyDetail({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     if (!id) return;
     api.get(`/properties/${id}`).then((res) => {
-      setProperty(res.data);
+      const data = res.data?.data || res.data;
+      setProperty(data);
       // Fetch similar properties
-      const minPrice = res.data.price * 0.7;
-      const maxPrice = res.data.price * 1.3;
-      api.get(`/properties/?city=${res.data.city}&min_price=${minPrice}&max_price=${maxPrice}&limit=3`)
+      const minPrice = (data.price || 0) * 0.7;
+      const maxPrice = (data.price || 0) * 1.3;
+      api.get(`/properties/?city=${data.city}&min_price=${minPrice}&max_price=${maxPrice}&limit=3`)
         .then(simRes => {
           const items = simRes.data?.data || simRes.data?.items || (Array.isArray(simRes.data) ? simRes.data : []);
           setSimilarProperties(items.filter((p: any) => p.id !== id));
@@ -39,7 +40,10 @@ export default function PropertyDetail({ params }: { params: Promise<{ id: strin
         .catch(() => {});
     });
     if (isAuthenticated) {
-      api.get("/saved-properties/ids").then((res) => setSaved(res.data.includes(id))).catch(() => {});
+      api.get("/saved-properties/ids").then((res) => {
+        const ids = res.data?.data || res.data;
+        setSaved(Array.isArray(ids) && ids.includes(id));
+      }).catch(() => {});
     }
   }, [id, isAuthenticated]);
 
