@@ -12,8 +12,8 @@ class RegisterRequest(BaseModel):
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
-        if v not in ("landlord", "agent"):
-            raise ValueError("role must be 'landlord' or 'agent'")
+        if v not in ("landlord", "agent", "admin"):
+            raise ValueError("role must be 'landlord', 'agent', or 'admin'")
         return v
 
     @field_validator("password")

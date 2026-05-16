@@ -211,6 +211,7 @@ async def create_user(body: RegisterRequest, admin: AdminUser, db: DB):
     db.add(user)
     await db.flush()
     await db.refresh(user)
+    return user
 
 @router.get("/audit-logs", response_model=list[AuditLogOut])
 async def list_audit_logs(

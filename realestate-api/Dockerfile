@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./app /app/app
 COPY ./alembic /app/alembic
 COPY ./alembic.ini /app/alembic.ini
+COPY ./create_admin.py /app/create_admin.py
 
 EXPOSE 8000
 

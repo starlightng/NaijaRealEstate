@@ -380,8 +380,9 @@ export default function AdminDashboard() {
                   alert("User created successfully");
                   setShowCreateUser(false);
                   fetchData();
-                } catch (err) {
-                  alert("Creation failed");
+                } catch (err: any) {
+                  const msg = err.response?.data?.detail || "Creation failed";
+                  alert(msg);
                 }
               }} className="space-y-5">
                 <div >
