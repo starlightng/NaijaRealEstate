@@ -12,7 +12,7 @@ export default function InquiriesList() {
     async function fetchInquiries() {
       try {
         const res = await api.get("/inquiries/");
-        setInquiries(res.data);
+        setInquiries(Array.isArray(res.data) ? res.data : (res.data.data || []));
       } catch (err) {
         console.error(err);
       } finally {

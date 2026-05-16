@@ -111,8 +111,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    api.get("/properties/meta/context").then(res => setMetadata(res.data)).catch(() => {});
-    api.get("/properties/stats").then(res => setStats(res.data)).catch(() => {});
+    api.get("/properties/meta/context").then(res => setMetadata(res.data?.data || res.data)).catch(() => {});
+    api.get("/properties/stats").then(res => setStats(res.data?.data || res.data)).catch(() => {});
   }, []);
 
   useEffect(() => {

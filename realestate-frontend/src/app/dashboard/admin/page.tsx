@@ -33,10 +33,14 @@ export default function AdminDashboard() {
         api.get("/admin/analytics"),
         api.get("/admin/audit-logs")
       ]);
-      setPendingListings(Array.isArray(pendingRes.data) ? pendingRes.data : (pendingRes.data.items || []));
-      setAllListings(Array.isArray(allRes.data) ? allRes.data : (allRes.data.items || []));
-      setStats(statsRes.data);
-      setAuditLogs(Array.isArray(auditRes.data) ? auditRes.data : (auditRes.data.items || []));
+      setPendingListings(
+        Array.isArray(pendingRes.data) ? pendingRes.data : (pendingRes.data.data || pendingRes.data.items || [])
+      );
+      setAllListings(
+        Array.isArray(allRes.data) ? allRes.data : (allRes.data.data || allRes.data.items || [])
+      );
+      setStats(statsRes.data?.data || statsRes.data);
+      setAuditLogs(Array.isArray(auditRes.data) ? auditRes.data : (auditRes.data.data || auditRes.data.items || []));
     } catch (e) {
       console.error("Error fetching data", e);
     } finally {

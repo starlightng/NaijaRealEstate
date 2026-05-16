@@ -17,6 +17,7 @@ from app.schemas.inquiry import (
     TimelineEventResponse,
     LeadDetailResponse,
 )
+from app.schemas.responses import APIResponse
 
 from app.core.notifications import manager as notification_manager
 
@@ -79,7 +80,7 @@ async def create_inquiry(
     return inquiry
 
 
-@router.get("/", response_model=list[LeadDetailResponse])
+@router.get("/", response_model=APIResponse[list[LeadDetailResponse]])
 async def list_leads(
     db: DB,
     current_user: LandlordOrAgentUser,
@@ -99,7 +100,7 @@ async def list_leads(
     result = await db.execute(query)
     
     inquiries = result.scalars().all()
-    return [
+    return APIResponse(data=[
         LeadDetailResponse(
             id=inq.id,
             property_id=inq.property_id,
@@ -123,7 +124,7 @@ async def list_leads(
             ],
         )
         for inq in inquiries
-    ]
+    ])
 
 
 

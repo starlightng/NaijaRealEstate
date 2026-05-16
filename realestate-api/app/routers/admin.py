@@ -12,6 +12,7 @@ from app.models.user import User
 from app.models.audit import AuditLog
 from app.models.notification import Notification
 from app.schemas.property import PropertyAdminOut
+from app.schemas.responses import APIResponse, PaginatedResponse
 from app.schemas.auth import RegisterRequest
 from app.schemas.user import UserMe
 from app.schemas.audit import AuditLogOut
@@ -95,7 +96,7 @@ async def analytics(admin: AdminUser, db: DB):
 
 # ── Moderation Queue ──────────────────────────────────────────────────────────
 
-@router.get("/properties/pending", response_model=list[PropertyAdminOut])
+@router.get("/properties/pending", response_model=APIResponse[list[PropertyAdminOut]])
 async def pending_listings(
     admin: AdminUser, db: DB,
     skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100),
@@ -107,10 +108,10 @@ async def pending_listings(
         .order_by(Property.created_at.asc())
         .offset(skip).limit(limit)
     )
-    return result.scalars().all()
+    return APIResponse(data=result.scalars().all())
 
 
-@router.get("/properties", response_model=list[PropertyAdminOut])
+@router.get("/properties", response_model=APIResponse[list[PropertyAdminOut]])
 async def all_listings(
     admin: AdminUser, db: DB,
     status: str | None = None,
@@ -120,7 +121,7 @@ async def all_listings(
     if status:
         query = query.where(Property.status == status)
     result = await db.execute(query.order_by(Property.created_at.desc()).offset(skip).limit(limit))
-    return result.scalars().all()
+    return APIResponse(data=result.scalars().all())
 
 
 @router.put("/properties/{property_id}/approve", response_model=PropertyAdminOut)

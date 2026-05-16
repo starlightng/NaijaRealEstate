@@ -123,14 +123,14 @@ async def list_properties(
     return PaginatedResponse(items=items, total=total, skip=skip, limit=limit)
 
 
-@router.get("/meta/context", tags=["Meta"])
+@router.get("/meta/context", response_model=APIResponse[dict], tags=["Meta"])
 async def get_nigerian_context():
     from app.utils.nigeria import (
         CURRENCY_SYMBOL, CURRENCY_CODE, NIGERIAN_STATES, POPULAR_CITIES,
         COMMON_AMENITIES, PROPERTY_TYPES, LISTING_TYPES,
         PRICE_PERIODS, TITLE_DOCUMENTS,
     )
-    return {
+    return APIResponse(data={
         "currency": {"symbol": CURRENCY_SYMBOL, "code": CURRENCY_CODE},
         "states": NIGERIAN_STATES,
         "popular_cities": POPULAR_CITIES,
@@ -139,9 +139,9 @@ async def get_nigerian_context():
         "listing_types": LISTING_TYPES,
         "price_periods": PRICE_PERIODS,
         "title_documents": TITLE_DOCUMENTS,
-    }
+    })
 
-@router.get("/stats", tags=["Meta"])
+@router.get("/stats", response_model=APIResponse[dict], tags=["Meta"])
 async def get_public_stats(db: DB):
     """Publicly available stats for the homepage."""
     from app.models.user import User
@@ -155,11 +155,11 @@ async def get_public_stats(db: DB):
         .where(Property.status == "approved", Property.deleted_at.is_(None))
     ) or 0
 
-    return {
+    return APIResponse(data={
         "total_listings": total_props or 0,
         "total_users": total_users or 0,
         "total_views": total_views,
-    }
+    })
 
 
 @router.get("/me/listings", response_model=APIResponse[list[PropertyOut]])

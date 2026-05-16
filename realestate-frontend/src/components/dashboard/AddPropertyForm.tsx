@@ -74,9 +74,10 @@ export default function AddPropertyForm({ onSuccess, initialData, propertyId }: 
 
   useEffect(() => {
     api.get("/properties/meta/context").then(res => {
+      const data = res.data?.data || res.data;
       setMeta({
-        states: res.data.states || [],
-        popular_cities: res.data.popular_cities || {},
+        states: data.states || [],
+        popular_cities: data.popular_cities || {},
       });
     }).catch(err => console.error("Failed to fetch meta context", err));
   }, []);
