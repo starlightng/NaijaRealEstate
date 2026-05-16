@@ -254,7 +254,7 @@ async def reassign_property(
     db.add(AuditLog(
         actor_id=admin.id, action="reassign_property",
         target_type="property", target_id=property_id,
-        details={"old_owner": str(old_owner_id), "new_owner": str(owner_id)}
+        after_data={"old_owner": str(old_owner_id), "new_owner": str(owner_id)}
     ))
     
     await db.flush()
