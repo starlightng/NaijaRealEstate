@@ -1,4 +1,5 @@
 from uuid import UUID
+from pydantic import BaseModel
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query

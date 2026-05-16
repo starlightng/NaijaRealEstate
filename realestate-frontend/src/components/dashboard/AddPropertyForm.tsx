@@ -67,9 +67,10 @@ export default function AddPropertyForm({ onSuccess, initialData, propertyId }: 
     Object.fromEntries(PHOTO_PERSPECTIVES.map((label) => [label, null]))
   );
   const [loading, setLoading] = useState(false);
-  const [meta, setMeta] = useState<{ states: string[], popular_cities: Record<string, string[]> }>({
+  const [meta, setMeta] = useState<{ states: string[], popular_cities: Record<string, string[]>, loading: boolean }>({
     states: [],
     popular_cities: {},
+    loading: true
   });
 
   useEffect(() => {
@@ -83,10 +84,12 @@ export default function AddPropertyForm({ onSuccess, initialData, propertyId }: 
         setMeta({
           states: contextData.states || [],
           popular_cities: contextData.popular_cities || {},
+          loading: false
         });
       }
     }).catch(err => {
       console.error("Failed to fetch meta context", err);
+      setMeta(prev => ({ ...prev, loading: false }));
     });
   }, []);
 
@@ -282,14 +285,14 @@ export default function AddPropertyForm({ onSuccess, initialData, propertyId }: 
           <div className="md:col-span-1">
             <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
             <select required name="state" value={formData.state} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg bg-white text-black">
-              <option value="">Select State</option>
+              <option value="">{meta.loading ? "Loading States..." : "Select State"}</option>
               {meta.states.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div className="md:col-span-1">
             <label className="block text-sm font-semibold text-gray-700 mb-2">City / Area</label>
             <select required name="city" value={formData.city} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg bg-white text-black">
-              <option value="">Select City</option>
+              <option value="">{meta.loading ? "Loading Cities..." : "Select City"}</option>
               {meta.popular_cities[formData.state]?.map(c => <option key={c} value={c}>{c}</option>) ||
                <option disabled value="">Please select a state first</option>}
             </select>
