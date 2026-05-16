@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: naija_db_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-naijaproperty}
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  backend:
+    image: ghcr.io/starlightng/naija-realestate-backend:latest
+    container_name: naija_backend_prod
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-naijaproperty}
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_ORIGINS: '["${SITE_URL:-http://localhost:3001}"]'
+      DEBUG: "false"
+    volumes:
+      - uploads_data_prod:/app/app/uploads
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  frontend:
+    image: ghcr.io/starlightng/naija-realestate-frontend:latest
+    container_name: naija_frontend_prod
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3001}
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+volumes:
+  pgdata_prod:
+  uploads_data_prod:
