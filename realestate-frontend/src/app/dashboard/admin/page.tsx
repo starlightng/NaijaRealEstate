@@ -22,6 +22,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"pending" | "all" | "analytics" | "audit">("pending");
   const [viewingImages, setViewingImages] = useState<any | null>(null);
   const [showCreateUser, setShowCreateUser] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [reassigningProperty, setReassigningProperty] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -41,6 +43,10 @@ export default function AdminDashboard() {
       );
       setStats(statsRes.data?.data || statsRes.data);
       setAuditLogs(Array.isArray(auditRes.data) ? auditRes.data : (auditRes.data.data || auditRes.data.items || []));
+
+      // Fetch users for reassignment
+      const usersRes = await api.get("/admin/users");
+      setUsers(Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data.data || []));
     } catch (e) {
       console.error("Error fetching data", e);
     } finally {
@@ -65,6 +71,17 @@ export default function AdminDashboard() {
       fetchData();
     } catch (e) {
       alert("Action failed");
+    }
+  };
+
+  const handleReassign = async (propertyId: string, ownerId: string) => {
+    try {
+      await api.patch(`/admin/properties/${propertyId}/reassign`, null, { params: { owner_id: ownerId } });
+      setReassigningProperty(null);
+      fetchData();
+      alert("Property reassigned successfully!");
+    } catch (e) {
+      alert("Reassignment failed");
     }
   };
 
@@ -350,7 +367,13 @@ export default function AdminDashboard() {
                             {listing.featured ? "Featured" : "Regular"}
                           </button>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-right flex justify-end gap-2">
+                           <button 
+                             onClick={() => setReassigningProperty(listing)}
+                             className="bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                           >
+                             Re-assign
+                           </button>
                            <Link href={`/properties/${listing.id}`} className="bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">View</Link>
                         </td>
                       </tr>
@@ -417,6 +440,36 @@ export default function AdminDashboard() {
                   Complete Account Creation
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {reassigningProperty && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setReassigningProperty(null)} />
+            <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+              <div className="p-8 border-b border-slate-100 bg-slate-50">
+                <h2 className="text-xl font-black text-slate-900">Re-assign Property</h2>
+                <p className="text-sm text-slate-500 font-medium mt-1">Select the new owner for <span className="text-indigo-600">"{reassigningProperty.title}"</span></p>
+              </div>
+              <div className="p-8 max-h-[400px] overflow-y-auto space-y-3">
+                {users.filter(u => u.role !== 'admin').map((u: any) => (
+                  <button
+                    key={u.id}
+                    onClick={() => handleReassign(reassigningProperty.id, u.id)}
+                    className="w-full text-left p-4 rounded-2xl border border-slate-100 hover:border-indigo-500 hover:bg-indigo-50 transition-all flex justify-between items-center group"
+                  >
+                    <div >
+                      <div className="font-bold text-slate-900 group-hover:text-indigo-600">{u.full_name}</div>
+                      <div className="text-xs text-slate-500">{u.email} • <span className="capitalize">{u.role}</span></div>
+                    </div>
+                    <Users className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                  </button>
+                ))}
+              </div>
+              <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
+                <button onClick={() => setReassigningProperty(null)} className="text-slate-400 text-xs font-bold hover:text-slate-600 uppercase tracking-widest">Cancel</button>
+              </div>
             </div>
           </div>
         )}
