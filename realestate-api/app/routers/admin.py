@@ -22,11 +22,11 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
 # ── Analytics ─────────────────────────────────────────────────────────────────
-24: 
-25: class ReassignRequest(BaseModel):
-26:     owner_id: UUID
-27:     agent_id: UUID | None = None
-28: 
+
+class ReassignRequest(BaseModel):
+    owner_id: UUID
+    agent_id: UUID | None = None
+
 
 @router.get("/analytics", response_model=APIResponse[dict])
 async def analytics(admin: AdminUser, db: DB):

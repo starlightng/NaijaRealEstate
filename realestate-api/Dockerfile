@@ -22,6 +22,8 @@ COPY ./alembic /app/alembic
 COPY ./alembic.ini /app/alembic.ini
 COPY ./create_admin.py /app/create_admin.py
 
+RUN python -m compileall -q /app/app /app/alembic
+
 EXPOSE 8000
 
 # Run migrations then start FastAPI
