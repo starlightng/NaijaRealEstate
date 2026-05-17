@@ -27,18 +27,21 @@ export default function LandlordDashboard() {
   const fetchListings = async () => {
     setLoading(true);
     try {
-      const [listingRes, leadRes] = await Promise.all([
-        api.get("/properties/me/listings"),
-        api.get("/inquiries/"),
-      ]);
+      const listingRes = await api.get("/properties/me/listings");
       setListings(
         Array.isArray(listingRes.data) 
           ? listingRes.data 
           : (listingRes.data.data || listingRes.data.items || [])
       );
+    } catch (e) {
+      console.error("Error fetching listings", e);
+    }
+
+    try {
+      const leadRes = await api.get("/inquiries/");
       setLeads(Array.isArray(leadRes.data) ? leadRes.data : (leadRes.data.data || []));
     } catch (e) {
-      console.error("Error fetching dashboard data", e);
+      console.error("Error fetching inquiries", e);
     } finally {
       setLoading(false);
     }

@@ -162,7 +162,10 @@ export default function AddPropertyForm({ onSuccess, initialData, propertyId }: 
         await api.put(`/properties/${propertyId}`, payload);
       } else {
         const created = await api.post("/properties/", payload);
-        targetPropertyId = created.data.id;
+        targetPropertyId = created.data?.id || created.data?.data?.id;
+        if (!targetPropertyId) {
+          throw new Error("Property was saved, but the server did not return its ID.");
+        }
       }
 
       if (targetPropertyId) {

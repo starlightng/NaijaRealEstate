@@ -109,6 +109,8 @@ async def list_leads(
             sender_phone=inq.sender_phone,
             message=inq.message,
             status=inq.status,
+            priority=inq.priority,
+            follow_up_at=inq.follow_up_at,
             created_at=inq.created_at,
             property_title=inq.property.title if inq.property else None,
             timeline_events=[
@@ -159,6 +161,8 @@ async def get_lead_detail(
         sender_phone=inquiry.sender_phone,
         message=inquiry.message,
         status=inquiry.status,
+        priority=inquiry.priority,
+        follow_up_at=inquiry.follow_up_at,
         created_at=inquiry.created_at,
         property_title=inquiry.property.title if inquiry.property else None,
         timeline_events=[
