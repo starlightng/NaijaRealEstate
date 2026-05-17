@@ -4,8 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from "react";
-import { Shield, CheckCircle, XCircle, Users, Home, LogOut, BarChart3, TrendingUp, Plus, Eye, LayoutGrid, Search } from "lucide-react";
-import Link from "next/link";
+import { Shield, CheckCircle, XCircle, Users, Home, LogOut, BarChart3, TrendingUp, Plus, Eye } from "lucide-react";
 import api from "@/lib/api/client";
 import { mediaUrl } from "@/lib/api/urls";
 import { useAuthStore } from "@/store/authStore";
@@ -69,7 +68,7 @@ export default function AdminDashboard() {
         await api.put(`/admin/properties/${id}/feature`, null, { params: { featured: !currentFeatured } });
       }
       fetchData();
-    } catch (e) {
+    } catch {
       alert("Action failed");
     }
   };
@@ -80,8 +79,8 @@ export default function AdminDashboard() {
       setReassigningProperty(null);
       fetchData();
       alert("Property reassigned successfully!");
-    } catch (e) {
-      alert("Reassignment failed");
+    } catch (e: any) {
+      alert(e.response?.data?.detail || "Reassignment failed");
     }
   };
 
@@ -374,7 +373,12 @@ export default function AdminDashboard() {
                            >
                              Re-assign
                            </button>
-                           <Link href={`/properties/${listing.id}`} className="bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all">View</Link>
+                           <button
+                             onClick={() => router.push(`/properties/${listing.id}`)}
+                             className="bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                           >
+                             View
+                           </button>
                         </td>
                       </tr>
                     ))}

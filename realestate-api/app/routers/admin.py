@@ -248,15 +248,24 @@ async def reassign_property(
     if not prop:
         raise AppError.PROPERTY_NOT_FOUND
     
-    # Verify new owner exists
-    new_owner = await db.get(User, owner_id)
+    # Verify new owner exists and can own a listing
+    new_owner = await db.get(User, body.owner_id)
     if not new_owner:
         raise AppError.USER_NOT_FOUND
+    if new_owner.role not in ("landlord", "agent"):
+        raise AppError.bad_request("Properties can only be reassigned to landlords or agents")
+
+    new_agent = None
+    if body.agent_id:
+        new_agent = await db.get(User, body.agent_id)
+        if not new_agent:
+            raise AppError.USER_NOT_FOUND
+        if new_agent.role != "agent":
+            raise AppError.bad_request("Assigned manager must be an agent")
     
     old_owner_id = prop.owner_id
     prop.owner_id = body.owner_id
-    if body.agent_id:
-        prop.agent_id = body.agent_id
+    prop.agent_id = body.agent_id if new_agent else None
     
     db.add(AuditLog(
         actor_id=admin.id, action="reassign_property",
